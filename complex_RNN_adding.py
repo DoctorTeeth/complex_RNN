@@ -11,17 +11,13 @@ import argparse, timeit
 
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
-def main(n_iter, n_batch, n_hidden, time_steps, learning_rate, savefile, scale_penalty, use_scale,
-         model, n_hidden_lstm, loss_function):
-
-
-    # --- Set optimization params --------
-    gradient_clipping = np.float32(50000)
+def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
+         savefile, scale_penalty, use_scale,
+         model, loss_function):
 
     # --- Set data params ----------------
     n_input = 2
     n_output = 1
-
 
     # --- Manage data --------------------
     n_train = 1e5
@@ -37,9 +33,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate, savefile, scale_p
                                                   size=(time_steps, n_train)),
                                 dtype=theano.config.floatX)
 
-#    inds = np.asarray([np.random.choice(time_steps, 2, replace=False) for i in xrange(train_x.shape[1])])
     inds = np.asarray(np.random.randint(time_steps/2, size=(train_x.shape[1],2)))
-    inds[:, 1] += time_steps/2  
+    inds[:, 1] += time_steps/2
 
     for i in range(train_x.shape[1]):
         train_x[inds[i, 0], i, 1] = 1.0
@@ -57,21 +52,22 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate, savefile, scale_p
                                                  size=(time_steps, n_test)),
                                 dtype=theano.config.floatX)
 
-    inds = np.asarray([np.random.choice(time_steps, 2, replace=False) for i in xrange(test_x.shape[1])])    
+    inds = np.asarray([np.random.choice(time_steps, 2, replace=False)
+                       for i in xrange(test_x.shape[1])])
     for i in range(test_x.shape[1]):
         test_x[inds[i, 0], i, 1] = 1.0
         test_x[inds[i, 1], i, 1] = 1.0
 
     test_y = (test_x[:,:,0] * test_x[:,:,1]).sum(axis=0)
-    test_y = np.reshape(test_y, (n_test, 1)) 
+    test_y = np.reshape(test_y, (n_test, 1))
 
    #######################################################################
 
-    gradient_clipping = np.float32(1)
-
-    inputs, parameters, costs = complex_RNN(n_input, n_hidden, n_output, scale_penalty, loss_function=loss_function)
+    inputs, parameters, costs = complex_RNN(n_input, n_hidden, n_output,
+                                            scale_penalty, loss_function=loss_function)
     if use_scale is False:
         parameters.pop()
+
     gradients = T.grad(costs[0], parameters)
 
     s_train_x = theano.shared(train_x)
@@ -94,10 +90,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate, savefile, scale_p
                    inputs[1] : s_test_y}
 
 
-
     train = theano.function([index], costs[0], givens=givens, updates=updates)
     test = theano.function([], costs[1], givens=givens_test)
-
 
     train_loss = []
     test_loss = []
@@ -124,13 +118,12 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate, savefile, scale_p
             print
             print "TEST"
             print "mse:", mse
-            print 
+            print
             test_loss.append(mse)
 
             if mse < best_test_loss:
                 best_params = [p.get_value() for p in parameters]
                 best_test_loss = mse
-
 
             save_vals = {'parameters': [p.get_value() for p in parameters],
                          'rmsprop': [r.get_value() for r in rmsprop],
@@ -145,8 +138,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate, savefile, scale_p
                          file(savefile, 'wb'),
                          cPickle.HIGHEST_PROTOCOL)
 
-
-    
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="training a model")
@@ -159,22 +150,20 @@ if __name__=="__main__":
     parser.add_argument("--scale_penalty", type=float, default=5)
     parser.add_argument("--use_scale", default=True)
     parser.add_argument("--model", default='complex_RNN')
-    parser.add_argument("--n_hidden_lstm", type=int, default=100)
     parser.add_argument("--loss_function", default='MSE')
 
     args = parser.parse_args()
-    dict = vars(args)
+    arg_dict = vars(args)
 
-    kwargs = {'n_iter': dict['n_iter'],
-              'n_batch': dict['n_batch'],
-              'n_hidden': dict['n_hidden'],
-              'time_steps': dict['time_steps'],
-              'learning_rate': np.float32(dict['learning_rate']),
-              'savefile': dict['savefile'],
-              'scale_penalty': dict['scale_penalty'],
-              'use_scale': dict['use_scale'],
-              'model': dict['model'],
-              'n_hidden_lstm': dict['n_hidden_lstm'],
-              'loss_function': dict['loss_function']}
+    kwargs = {'n_iter': arg_dict['n_iter'],
+              'n_batch': arg_dict['n_batch'],
+              'n_hidden': arg_dict['n_hidden'],
+              'time_steps': arg_dict['time_steps'],
+              'learning_rate': np.float32(arg_dict['learning_rate']),
+              'savefile': arg_dict['savefile'],
+              'scale_penalty': arg_dict['scale_penalty'],
+              'use_scale': arg_dict['use_scale'],
+              'model': arg_dict['model'],
+              'loss_function': arg_dict['loss_function']}
 
     main(**kwargs)
