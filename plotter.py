@@ -16,45 +16,29 @@ So the one task we have is:
 read this out and generate the plot.
 """
 
-files = sys.argv[1:] # all other arguments are results files
+show_test = sys.argv[1]
+files = sys.argv[2:] # all other arguments are results files
 
 print files
 
-import pdb; pdb.set_trace()
+results = {}
 
-results = []
+for f in files:
+  with open(f, 'rb') as pickle_file:
+        read_vals = cPickle.load(pickle_file)
+  train = read_vals['train_loss']
+  test  = read_vals['test_loss']
 
-for x in files:
-  with open(x) as f:
-    results.append(f.readlines())
+  if show_test == "test":
+    y = test
+  else:
+    y = train
+  x = np.arange(len(y))
 
-xs = []
-ys = []
-for result in results:
-  x = []
-  y = []
-  for line in result:
-    if line.startswith("trailing"):
-      words = line.split()
-      y.append(float(words[-1]))
-    elif line.startswith("iter"):
-      words = line.split()
-      x.append(words[-1])
-    else:
-      pass
-  xs.append(x)
-  ys.append(y)
-
-
-for x,y,f in zip(xs,ys,files):
-  a = np.array(x[:max])
-  b = np.array(y[:max])
-
-  plt.plot(a,b, label=os.path.basename(f))
+  plt.plot(x, y, label=os.path.basename(f))
 
 plt.xlabel("training sequences")
-plt.ylabel("BPC")
+plt.ylabel("Cost")
 plt.ylim(ymin=0)
 plt.legend(loc='upper right')
 plt.show()
-
