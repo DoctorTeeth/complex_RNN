@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import cPickle
 import gzip
 import theano
@@ -125,6 +127,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                 best_params = [p.get_value() for p in parameters]
                 best_test_loss = mse
 
+            import pdb; pdb.set_trace()
+
             save_vals = {'parameters': [p.get_value() for p in parameters],
                          'rmsprop': [r.get_value() for r in rmsprop],
                          'train_loss': train_loss,
@@ -143,8 +147,8 @@ if __name__=="__main__":
         description="training a model")
     parser.add_argument("--n_iter", type=int, default=20000)
     parser.add_argument("--n_batch", type=int, default=20)
-    parser.add_argument("--n_hidden", type=int, default=512)
-    parser.add_argument("--time_steps", type=int, default=200)
+    parser.add_argument("--n_hidden", type=int, default=256)
+    parser.add_argument("--time_steps", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", default="save.out")
     parser.add_argument("--scale_penalty", type=float, default=5)

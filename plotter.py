@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
+import cPickle
 
 """
 The goal is to plot serialized runs after the fact.
@@ -9,16 +12,15 @@ What we want is to take as arguments a list of runFiles.
 Where a runfile contains the xs (the number of steps)
 and ys (the cost at that step) and the label for the graph.
 
-So the two tasks we have are: 
-save this run thing into a pkl file from the training
+So the one task we have is:
 read this out and generate the plot.
 """
 
-max = int(sys.argv[1]) # the xrange of the model
+files = sys.argv[1:] # all other arguments are results files
 
-files = sys.argv[2:] # all other arguments are results files
-  
 print files
+
+import pdb; pdb.set_trace()
 
 results = []
 
