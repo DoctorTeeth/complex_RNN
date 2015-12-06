@@ -1,80 +1,8 @@
 import theano, cPickle
 import theano.tensor as T
 import numpy as np
-from fftconv import cufft, cuifft
+import utils as ut
 
-def initialize_matrix(n_in, n_out, name, rng):
-    bin = np.sqrt(6. / (n_in + n_out))
-    values = np.asarray(rng.uniform(low=-bin,
-                                    high=bin,
-                                    size=(n_in, n_out)),
-                                    dtype=theano.config.floatX)
-    return theano.shared(value=values, name=name)
-
-def do_fft(input, n_hidden):
-    fft_input = T.reshape(input, (input.shape[0], 2, n_hidden))
-    fft_input = fft_input.dimshuffle(0,2,1)
-    fft_output = cufft(fft_input) / T.sqrt(n_hidden)
-    fft_output = fft_output.dimshuffle(0,2,1)
-    output = T.reshape(fft_output, (input.shape[0], 2*n_hidden))
-    return output
-
-def do_ifft(input, n_hidden):
-    ifft_input = T.reshape(input, (input.shape[0], 2, n_hidden))
-    ifft_input = ifft_input.dimshuffle(0,2,1)
-    ifft_output = cuifft(ifft_input) / T.sqrt(n_hidden)
-    ifft_output = ifft_output.dimshuffle(0,2,1)
-    output = T.reshape(ifft_output, (input.shape[0], 2*n_hidden))
-    return output
-
-
-def scale_diag(input, n_hidden, diag):
-    input_re = input[:, :n_hidden]
-    input_im = input[:, n_hidden:]
-    Diag = T.nlinalg.AllocDiag()(diag)
-    input_re_times_Diag = T.dot(input_re, Diag)
-    input_im_times_Diag = T.dot(input_im, Diag)
-
-    return T.concatenate([input_re_times_Diag, input_im_times_Diag], axis=1)
-
-def times_diag(input, n_hidden, diag):
-    input_re = input[:, :n_hidden]
-    input_im = input[:, n_hidden:]
-    Re = T.nlinalg.AllocDiag()(T.cos(diag))
-    Im = T.nlinalg.AllocDiag()(T.sin(diag))
-    input_re_times_Re = T.dot(input_re, Re)
-    input_re_times_Im = T.dot(input_re, Im)
-    input_im_times_Re = T.dot(input_im, Re)
-    input_im_times_Im = T.dot(input_im, Im)
-
-    return T.concatenate([input_re_times_Re - input_im_times_Im,
-                          input_re_times_Im + input_im_times_Re], axis=1)
-
-def vec_permutation(input, n_hidden, index_permute):
-    re = input[:, :n_hidden]
-    im = input[:, n_hidden:]
-    re_permute = re[:, index_permute]
-    im_permute = im[:, index_permute]
-
-    return T.concatenate([re_permute, im_permute], axis=1)
-
-def times_reflection(input, n_hidden, reflection):
-    input_re = input[:, :n_hidden]
-    input_im = input[:, n_hidden:]
-    reflect_re = reflection[:n_hidden]
-    reflect_im = reflection[n_hidden:]
-
-    vstarv = (reflect_re**2 + reflect_im**2).sum()
-    input_re_reflect = input_re - 2 / vstarv * (T.outer(T.dot(input_re, reflect_re), reflect_re)
-                                                + T.outer(T.dot(input_re, reflect_im), reflect_im)
-                                                - T.outer(T.dot(input_im, reflect_im), reflect_re)
-                                                + T.outer(T.dot(input_im, reflect_re), reflect_im))
-    input_im_reflect = input_im - 2 / vstarv * (T.outer(T.dot(input_im, reflect_re), reflect_re)
-                                                + T.outer(T.dot(input_im, reflect_im), reflect_im)
-                                                + T.outer(T.dot(input_re, reflect_im), reflect_re)
-                                                - T.outer(T.dot(input_re, reflect_re), reflect_im))
-
-    return T.concatenate([input_re_reflect, input_im_reflect], axis=1)
 
 
 def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, loss_function='CE'):
@@ -83,18 +11,18 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
     rng = np.random.RandomState(1234)
 
     # Initialize parameters: theta, V_re, V_im, hidden_bias, U, out_bias, h_0
-    V_re = initialize_matrix(n_input, n_hidden, 'V_re', rng)
-    V_im = initialize_matrix(n_input, n_hidden, 'V_im', rng)
-    U = initialize_matrix(2 * n_hidden, n_output, 'U', rng)
+    V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
+    V_im = ut.initialize_matrix(n_input, n_hidden, 'V_im', rng)
+    U = ut.initialize_matrix(2 * n_hidden, n_output, 'U', rng)
     hidden_bias = theano.shared(np.asarray(rng.uniform(low=-0.01,
                                                        high=0.01,
                                                        size=(n_hidden,)),
                                            dtype=theano.config.floatX),
                                 name='hidden_bias')
 
-    reflection = initialize_matrix(2, 2*n_hidden, 'reflection', rng)
+    reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     out_bias = theano.shared(np.zeros((n_output,), dtype=theano.config.floatX), name='out_bias')
-    theta = initialize_matrix(3, n_hidden, 'theta', rng)
+    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
     bucket = np.sqrt(2.) * np.sqrt(3. / 2 / n_hidden)
     h_0 = theano.shared(np.asarray(rng.uniform(low=-bucket,
                                                high=bucket,
@@ -116,13 +44,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
     index_permute = np.random.permutation(n_hidden)
 
     # specify computation of the hidden-to-hidden transform
-    W_ops = [ lambda accum: times_diag(accum, n_hidden, theta[0,:]),
+    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
               # lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
-              lambda accum: vec_permutation(accum, n_hidden, index_permute),
-              lambda accum: times_diag(accum, n_hidden, theta[1,:]),
+              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
               # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
-              lambda accum: times_diag(accum, n_hidden, theta[2,:]),
-              lambda accum: scale_diag(accum, n_hidden, scale)
+              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
+              lambda accum: ut.scale_diag(accum, n_hidden, scale)
     ]
 
     # define the recurrence used by theano.scan - U maps hidden to output
