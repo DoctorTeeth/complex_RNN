@@ -17,6 +17,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
          savefile, scale_penalty, use_scale,
          model, loss_function):
 
+    np.random.seed(1234)
+    rng = np.random.RandomState(1234)
+
     # --- Set data params ----------------
     n_input = 2
     n_output = 1
@@ -67,8 +70,12 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     # W_params = [theta]
 
-    inputs, parameters, costs = complex_RNN(n_input, n_hidden, n_output,
-                                            scale_penalty, loss_function=loss_function)
+    inputs, parameters, costs = complex_RNN(n_input,
+                                            n_hidden,
+                                            n_output,
+                                            scale_penalty,
+                                            rng,
+                                            loss_function=loss_function)
     if use_scale is False:
         parameters.pop()
 
@@ -142,7 +149,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
 if __name__=="__main__":
 
-    np.random.seed(1234)
 
     parser = argparse.ArgumentParser(
         description="training a model")

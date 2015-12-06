@@ -4,12 +4,10 @@ import numpy as np
 import utils as ut
 
 
-
-def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False,
+def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
+                out_every_t=False,
                 loss_function='CE'):
 
-    np.random.seed(1234)
-    rng = np.random.RandomState(1234)
 
     # Initialize parameters: theta, V_re, V_im, hidden_bias, U, out_bias, h_0
     V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
