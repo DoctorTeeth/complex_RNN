@@ -113,23 +113,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         y = T.matrix()
     index_permute = np.random.permutation(n_hidden)
 
-    """
-    Each one of these takes (input, n_hidden, params)
-    """
 
-    # TODO: there is a more "functional" way we can do this
-    # we just pass in funcs that do matrix multiplication of a vector
-    # and separately have a set of params that gets passed
-    # would be nice to get rid of the second thing
-
-    # U_ops = [ (times_diag, theta[0,:]),
-    #           (times_reflection, reflection[0,:]),
-    #           (vec_permutation, index_permute),
-    #           (times_diag, theta[1,:]),
-    #           (times_reflection, reflection[1,:]),
-    #           (times_diag, theta[2,:]),
-    #           (scale_diag, scale)
-    #         ]
+    # specify computation of the hidden-to-hidden transform
     U_ops = [ lambda accum: times_diag(accum, n_hidden, theta[0,:]),
               lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
               lambda accum: vec_permutation(accum, n_hidden, index_permute),
@@ -139,21 +124,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
               lambda accum: scale_diag(accum, n_hidden, scale)
     ]
 
-    # define the recurrence used by theano.scan
+    # define the recurrence used by theano.scan - U maps hidden to output
     def recurrence(x_t, y_t, h_prev, cost_prev, acc_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
         # TODO: there must be a way to tell it we don't use cost_prev during the calculation
         # TODO: we'll need to make do_fft take more args
         # TODO: once we finish moving steps out of the loop, we can not pass U params to recurrence anymore
         # TODO: may have to append onto a list of steps
         # depends how theano compiler works
-
-        # Compute hidden linear transform
-        # this is a fold - we have a list of funcs,
-        # and we accum on h_prev
-        # the function takes the accum, and the func, and then applies the func to create the new accum
-        # accum = h_prev # looks like we don't need to store them all. difference happens either way
-        # for op in U_ops:
-        #     accum = op(accum)
 
         # step1 = times_diag(h_prev, n_hidden, theta[0,:])
         # step2 = step1
