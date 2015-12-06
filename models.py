@@ -53,7 +53,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     ]
 
     # define the recurrence used by theano.scan - U maps hidden to output
-    def recurrence(x_t, y_t, h_prev, cost_prev, acc_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
+    def recurrence(x_t, y_t, h_prev, cost_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
         # TODO: there must be a way to tell it we don't use cost_prev during the calculation
         # TODO: we'll need to make do_fft take more args
         # TODO: once we finish moving steps out of the loop, we can not pass U params to recurrence anymore
@@ -86,15 +86,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
             if loss_function == 'CE':
                 RNN_output = T.nnet.softmax(lin_output)
                 cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
-                acc_t =(T.eq(T.argmax(RNN_output, axis=-1), T.argmax(y_t, axis=-1))).mean(dtype=theano.config.floatX)
             elif loss_function == 'MSE':
                 cost_t = ((lin_output - y_t)**2).mean()
-                acc_t = theano.shared(np.float32(0.0))
         else:
             cost_t = theano.shared(np.float32(0.0))
-            acc_t = theano.shared(np.float32(0.0))
 
-        return h_t, cost_t, acc_t
+        # TODO: replace cost_t with lin_output
+        return h_t, cost_t
 
     # compute hidden states
     h_0_batch = T.tile(h_0, [x.shape[1], 1])
@@ -103,12 +101,15 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
         sequences = [x, y]
     else:
         sequences = [x, T.tile(theano.shared(np.zeros((1,1), dtype=theano.config.floatX)), [x.shape[0], 1, 1])]
-    [hidden_states, cost_steps, acc_steps], updates = theano.scan(fn=recurrence,
+    [hidden_states, cost_steps], updates = theano.scan(fn=recurrence,
                                                                   sequences=sequences,
                                                                   non_sequences=non_sequences,
-                                                                  outputs_info=[h_0_batch, theano.shared(np.float32(0.0)),
-                                                                                theano.shared(np.float32(0.0))])
+                                                                  outputs_info=[h_0_batch, theano.shared(np.float32(0.0))])
 
+    # TODO: if not out every t, we compute lin_output here
+    # if out every t, we comput it in the recurrence
+    # this is gross and we can likely get rid of it with a mask
+    # but, I understand why we output hidden_states at this moment I guess
     if not out_every_t:
         lin_output = T.dot(hidden_states[-1,:,:], U) + out_bias.dimshuffle('x', 0)
 
@@ -136,4 +137,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
         costs = [cost_penalty, cost, accuracy]
 
 
+    # TODO: we should return outputs instead of costs
+    # I think at this point we can return linear_outputs
     return [x, y], parameters, costs
