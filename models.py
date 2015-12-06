@@ -56,7 +56,7 @@ def vec_permutation(input, n_hidden, index_permute):
     re_permute = re[:, index_permute]
     im_permute = im[:, index_permute]
 
-    return T.concatenate([re_permute, im_permute], axis=1)      
+    return T.concatenate([re_permute, im_permute], axis=1)
 
 def times_reflection(input, n_hidden, reflection):
     input_re = input[:, :n_hidden]
@@ -65,20 +65,20 @@ def times_reflection(input, n_hidden, reflection):
     reflect_im = reflection[n_hidden:]
 
     vstarv = (reflect_re**2 + reflect_im**2).sum()
-    input_re_reflect = input_re - 2 / vstarv * (T.outer(T.dot(input_re, reflect_re), reflect_re) 
-                                                + T.outer(T.dot(input_re, reflect_im), reflect_im) 
-                                                - T.outer(T.dot(input_im, reflect_im), reflect_re) 
+    input_re_reflect = input_re - 2 / vstarv * (T.outer(T.dot(input_re, reflect_re), reflect_re)
+                                                + T.outer(T.dot(input_re, reflect_im), reflect_im)
+                                                - T.outer(T.dot(input_im, reflect_im), reflect_re)
                                                 + T.outer(T.dot(input_im, reflect_re), reflect_im))
-    input_im_reflect = input_im - 2 / vstarv * (T.outer(T.dot(input_im, reflect_re), reflect_re) 
-                                                + T.outer(T.dot(input_im, reflect_im), reflect_im) 
-                                                + T.outer(T.dot(input_re, reflect_im), reflect_re) 
+    input_im_reflect = input_im - 2 / vstarv * (T.outer(T.dot(input_im, reflect_re), reflect_re)
+                                                + T.outer(T.dot(input_im, reflect_im), reflect_im)
+                                                + T.outer(T.dot(input_re, reflect_im), reflect_re)
                                                 - T.outer(T.dot(input_re, reflect_re), reflect_im))
 
-    return T.concatenate([input_re_reflect, input_im_reflect], axis=1)      
+    return T.concatenate([input_re_reflect, input_im_reflect], axis=1)
 
 
 def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, loss_function='CE'):
-    
+
     np.random.seed(1234)
     rng = np.random.RandomState(1234)
 
@@ -89,19 +89,19 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
     hidden_bias = theano.shared(np.asarray(rng.uniform(low=-0.01,
                                                        high=0.01,
                                                        size=(n_hidden,)),
-                                           dtype=theano.config.floatX), 
+                                           dtype=theano.config.floatX),
                                 name='hidden_bias')
-    
+
     reflection = initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     out_bias = theano.shared(np.zeros((n_output,), dtype=theano.config.floatX), name='out_bias')
     theta = initialize_matrix(3, n_hidden, 'theta', rng)
     bucket = np.sqrt(2.) * np.sqrt(3. / 2 / n_hidden)
     h_0 = theano.shared(np.asarray(rng.uniform(low=-bucket,
                                                high=bucket,
-                                               size=(1, 2 * n_hidden)), 
+                                               size=(1, 2 * n_hidden)),
                                    dtype=theano.config.floatX),
                         name='h_0')
-    
+
     scale = theano.shared(np.ones((n_hidden,), dtype=theano.config.floatX),
                           name='scale')
     parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
@@ -119,13 +119,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
 
         # Compute hidden linear transform
         step1 = times_diag(h_prev, n_hidden, theta[0,:])
-        step2 = step1
-#        step2 = do_fft(step1, n_hidden)
+        # step2 = step1
+        step2 = do_fft(step1, n_hidden)
         step3 = times_reflection(step2, n_hidden, reflection[0,:])
         step4 = vec_permutation(step3, n_hidden, index_permute)
         step5 = times_diag(step4, n_hidden, theta[1,:])
-        step6 = step5
-#        step6 = do_ifft(step5, n_hidden)
+        # step6 = step5
+        step6 = do_ifft(step5, n_hidden)
         step7 = times_reflection(step6, n_hidden, reflection[1,:])
         step8 = times_diag(step7, n_hidden, theta[2,:])
         step9 = scale_diag(step8, n_hidden, scale)
@@ -150,8 +150,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         nonlin_output_re = lin_output_re * rescale
         nonlin_output_im = lin_output_im * rescale
 
-        h_t = T.concatenate([nonlin_output_re, 
-                             nonlin_output_im], axis=1) 
+        h_t = T.concatenate([nonlin_output_re,
+                             nonlin_output_im], axis=1)
         if out_every_t:
             lin_output = T.dot(h_t, U) + out_bias.dimshuffle('x', 0)
             if loss_function == 'CE':
@@ -177,7 +177,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
     [hidden_states, cost_steps, acc_steps], updates = theano.scan(fn=recurrence,
                                                                   sequences=sequences,
                                                                   non_sequences=non_sequences,
-                                                                  outputs_info=[h_0_batch, theano.shared(np.float32(0.0)), theano.shared(np.float32(0.0))])
+                                                                  outputs_info=[h_0_batch, theano.shared(np.float32(0.0)),
+                                                                                theano.shared(np.float32(0.0))])
 
     if not out_every_t:
         lin_output = T.dot(hidden_states[-1,:,:], U) + out_bias.dimshuffle('x', 0)

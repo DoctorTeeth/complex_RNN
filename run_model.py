@@ -127,8 +127,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                 best_params = [p.get_value() for p in parameters]
                 best_test_loss = mse
 
-            import pdb; pdb.set_trace()
-
             save_vals = {'parameters': [p.get_value() for p in parameters],
                          'rmsprop': [r.get_value() for r in rmsprop],
                          'train_loss': train_loss,
@@ -150,7 +148,7 @@ if __name__=="__main__":
     parser.add_argument("--n_hidden", type=int, default=256)
     parser.add_argument("--time_steps", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=0.001)
-    parser.add_argument("--savefile", default="save.out")
+    parser.add_argument("--savefile", required=True)
     parser.add_argument("--scale_penalty", type=float, default=5)
     parser.add_argument("--use_scale", default=True)
     parser.add_argument("--model", default='complex_RNN')
