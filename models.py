@@ -151,9 +151,9 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         # this is a fold - we have a list of funcs,
         # and we accum on h_prev
         # the function takes the accum, and the func, and then applies the func to create the new accum
-        accum = h_prev # looks like we don't need to store them all. difference happens either way
-        for op in U_ops:
-            accum = op(accum)
+        # accum = h_prev # looks like we don't need to store them all. difference happens either way
+        # for op in U_ops:
+        #     accum = op(accum)
 
         # step1 = times_diag(h_prev, n_hidden, theta[0,:])
         # step2 = step1
@@ -167,7 +167,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         # step8 = times_diag(step7, n_hidden, theta[2,:])
         # step9 = scale_diag(step8, n_hidden, scale)
 
-        hidden_lin_output = accum
+        hidden_lin_output = reduce(lambda x,f : f(x), U_ops, h_prev)
 
         # Compute data linear transform
         data_lin_output_re = T.dot(x_t, V_re)
