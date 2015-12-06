@@ -141,6 +141,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                          cPickle.HIGHEST_PROTOCOL)
 
 if __name__=="__main__":
+
+    np.random.seed(0)
+
     parser = argparse.ArgumentParser(
         description="training a model")
     parser.add_argument("--n_iter", type=int, default=100)
