@@ -106,7 +106,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
                           name='scale')
     parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
 
-
     x = T.tensor3()
     if out_every_t:
         y = T.tensor3()
@@ -132,7 +131,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
               (scale_diag, scale)
             ]
 
-
     # define the recurrence used by theano.scan
     def recurrence(x_t, y_t, h_prev, cost_prev, acc_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
         # TODO: we'll need to make do_fft take more args
@@ -140,11 +138,14 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         # TODO: may have to append onto a list of steps
         # depends how theano compiler works
 
-        steps = [h_prev] # looks like we don't need to store them all. difference happens either way
-        for op in U_ops:
-            steps.append(  op[0](steps[-1], n_hidden, op[1])  )
-
         # Compute hidden linear transform
+        # this is a fold - we have a list of funcs,
+        # and we accum on h_prev
+        # the function takes the accum, and the func, and then applies the func to create the new accum
+        accum = h_prev # looks like we don't need to store them all. difference happens either way
+        for op in U_ops:
+            accum = op[0](accum, n_hidden, op[1])
+
         # step1 = times_diag(h_prev, n_hidden, theta[0,:])
         # step2 = step1
         # # step2 = do_fft(step1, n_hidden)
@@ -157,7 +158,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         # step8 = times_diag(step7, n_hidden, theta[2,:])
         # step9 = scale_diag(step8, n_hidden, scale)
 
-        hidden_lin_output = steps[-1]
+        hidden_lin_output = accum
 
         # Compute data linear transform
         data_lin_output_re = T.dot(x_t, V_re)
