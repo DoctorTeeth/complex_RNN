@@ -114,23 +114,51 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         y = T.matrix()
     index_permute = np.random.permutation(n_hidden)
 
+    """
+    Each one of these takes (input, n_hidden, params)
+    """
+
+    # TODO: there is a more "functional" way we can do this
+    # we just pass in funcs that do matrix multiplication of a vector
+    # and separately have a set of params that gets passed
+    # would be nice to get rid of the second thing
+
+    U_ops = [ (times_diag, theta[0,:]),
+              (times_reflection, reflection[0,:]),
+              (vec_permutation, index_permute),
+              (times_diag, theta[1,:]),
+              (times_reflection, reflection[0,:]),
+              (times_diag, theta[2,:]),
+              (scale_diag, scale)
+            ]
+
+
     # define the recurrence used by theano.scan
     def recurrence(x_t, y_t, h_prev, cost_prev, acc_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):  
 
-        # Compute hidden linear transform
-        step1 = times_diag(h_prev, n_hidden, theta[0,:])
-        step2 = step1
-        # step2 = do_fft(step1, n_hidden)
-        step3 = times_reflection(step2, n_hidden, reflection[0,:])
-        step4 = vec_permutation(step3, n_hidden, index_permute)
-        step5 = times_diag(step4, n_hidden, theta[1,:])
-        step6 = step5
-        # step6 = do_ifft(step5, n_hidden)
-        step7 = times_reflection(step6, n_hidden, reflection[1,:])
-        step8 = times_diag(step7, n_hidden, theta[2,:])
-        step9 = scale_diag(step8, n_hidden, scale)
+              #TODO: we'll need to make do_fft take more args
 
-        hidden_lin_output = step9
+        
+        # TODO: may have to append onto a list of steps
+        # depends how theano compiler works
+        last = h_prev
+        for op in U_ops:
+            last = op[0](last, n_hidden, op[1])
+
+        # Compute hidden linear transform
+        # step1 = times_diag(h_prev, n_hidden, theta[0,:])
+        # step2 = step1
+        # # step2 = do_fft(step1, n_hidden)
+        # step3 = times_reflection(step2, n_hidden, reflection[0,:])
+        # step4 = vec_permutation(step3, n_hidden, index_permute)
+        # step5 = times_diag(step4, n_hidden, theta[1,:])
+        # step6 = step5
+        # # step6 = do_ifft(step5, n_hidden)
+        # step7 = times_reflection(step6, n_hidden, reflection[1,:])
+        # step8 = times_diag(step7, n_hidden, theta[2,:])
+        # step9 = scale_diag(step8, n_hidden, scale)
+
+        hidden_lin_output = last
 
         # Compute data linear transform
         data_lin_output_re = T.dot(x_t, V_re)
