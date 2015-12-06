@@ -63,7 +63,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     test_y = (test_x[:,:,0] * test_x[:,:,1]).sum(axis=0)
     test_y = np.reshape(test_y, (n_test, 1))
 
-   #######################################################################
+    #######################################################################
+
+    # W_params = [theta]
 
     inputs, parameters, costs = complex_RNN(n_input, n_hidden, n_output,
                                             scale_penalty, loss_function=loss_function)
@@ -91,7 +93,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     givens_test = {inputs[0] : s_test_x,
                    inputs[1] : s_test_y}
 
-
     train = theano.function([index], costs[0], givens=givens, updates=updates)
     test = theano.function([], costs[1], givens=givens_test)
 
@@ -107,7 +108,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
             s_train_x.set_value(data_x[:,inds,:])
             data_y = s_train_y.get_value()
             s_train_y.set_value(data_y[inds,:])
-
 
         mse = train(i % int(num_batches))
         train_loss.append(mse)

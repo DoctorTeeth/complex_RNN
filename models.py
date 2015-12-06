@@ -104,7 +104,9 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
 
     scale = theano.shared(np.ones((n_hidden,), dtype=theano.config.floatX),
                           name='scale')
-    parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
+
+    # parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
+    parameters = [V_re, V_im, U, hidden_bias, out_bias, theta, h_0, scale]
 
     x = T.tensor3()
     if out_every_t:
@@ -113,13 +115,12 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         y = T.matrix()
     index_permute = np.random.permutation(n_hidden)
 
-
     # specify computation of the hidden-to-hidden transform
-    U_ops = [ lambda accum: times_diag(accum, n_hidden, theta[0,:]),
-              lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
+    W_ops = [ lambda accum: times_diag(accum, n_hidden, theta[0,:]),
+              # lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
               lambda accum: vec_permutation(accum, n_hidden, index_permute),
               lambda accum: times_diag(accum, n_hidden, theta[1,:]),
-              lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
+              # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
               lambda accum: times_diag(accum, n_hidden, theta[2,:]),
               lambda accum: scale_diag(accum, n_hidden, scale)
     ]
@@ -132,19 +133,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         # TODO: may have to append onto a list of steps
         # depends how theano compiler works
 
-        # step1 = times_diag(h_prev, n_hidden, theta[0,:])
-        # step2 = step1
-        # # step2 = do_fft(step1, n_hidden)
-        # step3 = times_reflection(step2, n_hidden, reflection[0,:])
-        # step4 = vec_permutation(step3, n_hidden, index_permute)
-        # step5 = times_diag(step4, n_hidden, theta[1,:])
-        # step6 = step5
-        # # step6 = do_ifft(step5, n_hidden)
-        # step7 = times_reflection(step6, n_hidden, reflection[1,:])
-        # step8 = times_diag(step7, n_hidden, theta[2,:])
-        # step9 = scale_diag(step8, n_hidden, scale)
-
-        hidden_lin_output = reduce(lambda x,f : f(x), U_ops, h_prev)
+        hidden_lin_output = reduce(lambda x,f : f(x), W_ops, h_prev)
 
         # Compute data linear transform
         data_lin_output_re = T.dot(x_t, V_re)
@@ -157,7 +146,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         lin_output_im = lin_output[:, n_hidden:]
 
         # Apply non-linearity ----------------------------
-
         # scale RELU nonlinearity
         modulus = T.sqrt(lin_output_re ** 2 + lin_output_im ** 2)
         rescale = T.maximum(modulus + hidden_bias.dimshuffle('x',0), 0.) / (modulus + 1e-5)
