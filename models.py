@@ -89,6 +89,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
             elif loss_function == 'MSE':
                 cost_t = ((lin_output - y_t)**2).mean()
         else:
+            # we fill this in outside the recurrence
             cost_t = theano.shared(np.float32(0.0))
 
         # TODO: replace cost_t with lin_output
@@ -133,7 +134,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     else:
         cost = cost_steps.mean()
         cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-        accuracy = acc_steps.mean()
         costs = [cost_penalty, cost, accuracy]
 
 
