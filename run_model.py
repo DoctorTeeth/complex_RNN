@@ -142,7 +142,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
 if __name__=="__main__":
 
-    np.random.seed(0)
+    np.random.seed(1234)
 
     parser = argparse.ArgumentParser(
         description="training a model")

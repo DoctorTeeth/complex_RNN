@@ -5,7 +5,8 @@ import utils as ut
 
 
 
-def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, loss_function='CE'):
+def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False,
+                loss_function='CE'):
 
     np.random.seed(1234)
     rng = np.random.RandomState(1234)
