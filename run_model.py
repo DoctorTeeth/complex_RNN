@@ -143,7 +143,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="training a model")
-    parser.add_argument("--n_iter", type=int, default=20000)
+    parser.add_argument("--n_iter", type=int, default=100)
     parser.add_argument("--n_batch", type=int, default=20)
     parser.add_argument("--n_hidden", type=int, default=256)
     parser.add_argument("--time_steps", type=int, default=10)

@@ -119,13 +119,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
 
         # Compute hidden linear transform
         step1 = times_diag(h_prev, n_hidden, theta[0,:])
-        # step2 = step1
-        step2 = do_fft(step1, n_hidden)
+        step2 = step1
+        # step2 = do_fft(step1, n_hidden)
         step3 = times_reflection(step2, n_hidden, reflection[0,:])
         step4 = vec_permutation(step3, n_hidden, index_permute)
         step5 = times_diag(step4, n_hidden, theta[1,:])
-        # step6 = step5
-        step6 = do_ifft(step5, n_hidden)
+        step6 = step5
+        # step6 = do_ifft(step5, n_hidden)
         step7 = times_reflection(step6, n_hidden, reflection[1,:])
         step8 = times_diag(step7, n_hidden, theta[2,:])
         step9 = scale_diag(step8, n_hidden, scale)
@@ -140,7 +140,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, out_every_t=False, l
         # Total linear output
         lin_output = hidden_lin_output + data_lin_output
         lin_output_re = lin_output[:, :n_hidden]
-        lin_output_im = lin_output[:, n_hidden:] 
+        lin_output_im = lin_output[:, n_hidden:]
 
         # Apply non-linearity ----------------------------
 
