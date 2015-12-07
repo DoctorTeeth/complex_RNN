@@ -32,6 +32,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     train_x = np.asarray(np.zeros((time_steps, n_train, 2)),
                          dtype=theano.config.floatX)
 
+    train_y = np.asarray(np.zeros((time_steps, n_train, 1)),
+                         dtype=theano.config.floatX)
+
 
     train_x[:,:,0] = np.asarray(np.random.uniform(low=0.,
                                                   high=1.,
@@ -45,10 +48,14 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
         train_x[inds[i, 0], i, 1] = 1.0
         train_x[inds[i, 1], i, 1] = 1.0
 
-    train_y = (train_x[:,:,0] * train_x[:,:,1]).sum(axis=0)
-    train_y = np.reshape(train_y, (n_train, 1))
+    train_y_last = (train_x[:,:,0] * train_x[:,:,1]).sum(axis=0)
+    train_y_last = np.reshape(train_y_last, (n_train, 1))
+    train_y[-1] = train_y_last
 
     test_x = np.asarray(np.zeros((time_steps, n_test, 2)),
+                        dtype=theano.config.floatX)
+
+    test_y = np.asarray(np.zeros((time_steps, n_test, 1)),
                         dtype=theano.config.floatX)
 
 
@@ -63,15 +70,17 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
         test_x[inds[i, 0], i, 1] = 1.0
         test_x[inds[i, 1], i, 1] = 1.0
 
-    test_y = (test_x[:,:,0] * test_x[:,:,1]).sum(axis=0)
-    test_y = np.reshape(test_y, (n_test, 1))
+    test_y_last = (test_x[:,:,0] * test_x[:,:,1]).sum(axis=0)
+    test_y_last = np.reshape(test_y_last, (n_test, 1))
+    test_y[-1] = test_y_last
+
 
     # so train_x is (10,100k,2)
     # an train_y is (100k,1)
     # we'd like to add another dimension to the front of y's shape for both
     # train and test, so that train_y is (10,)
 
-    # import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
 
     #######################################################################
 
