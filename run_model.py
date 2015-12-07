@@ -66,6 +66,13 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     test_y = (test_x[:,:,0] * test_x[:,:,1]).sum(axis=0)
     test_y = np.reshape(test_y, (n_test, 1))
 
+    # so train_x is (10,100k,2)
+    # an train_y is (100k,1)
+    # we'd like to add another dimension to the front of y's shape for both
+    # train and test, so that train_y is (10,)
+
+    # import pdb; pdb.set_trace()
+
     #######################################################################
 
     # W_params = [theta]

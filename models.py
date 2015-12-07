@@ -63,7 +63,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
         hidden_lin_output = reduce(lambda x,f : f(x), W_ops, h_prev)
 
         # Compute data linear transform
-        data_lin_output_re = T.dot(x_t, V_re)
+        data_lin_output_re = T.dot(x_t, V_re) # does the unpacking of the 2 dimensions happen here?
         data_lin_output_im = T.dot(x_t, V_im)
         data_lin_output = T.concatenate([data_lin_output_re, data_lin_output_im], axis=1)
 
