@@ -36,10 +36,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     parameters = [V_re, V_im, U, hidden_bias, out_bias, theta, h_0, scale]
 
     x = T.tensor3()
-    if out_every_t:
-        y = T.tensor3()
-    else:
-        y = T.matrix()
+    y = T.tensor3()
     index_permute = np.random.permutation(n_hidden)
 
     # specify computation of the hidden-to-hidden transform
@@ -81,16 +78,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
         h_t = T.concatenate([nonlin_output_re,
                              nonlin_output_im], axis=1)
-        if out_every_t:
-            lin_output = T.dot(h_t, U) + out_bias.dimshuffle('x', 0)
-            if loss_function == 'CE':
-                RNN_output = T.nnet.softmax(lin_output)
-                cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
-            elif loss_function == 'MSE':
-                cost_t = ((lin_output - y_t)**2).mean()
-        else:
-            # we fill this in outside the recurrence
-            cost_t = theano.shared(np.float32(0.0))
+
+        lin_output = T.dot(h_t, U) + out_bias.dimshuffle('x', 0)
+        if loss_function == 'CE':
+            RNN_output = T.nnet.softmax(lin_output)
+            cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
+        elif loss_function == 'MSE':
+            cost_t = ((lin_output - y_t)**2).mean()
 
         # TODO: replace cost_t with lin_output
         return h_t, cost_t
@@ -98,14 +92,11 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     # compute hidden states
     h_0_batch = T.tile(h_0, [x.shape[1], 1])
     non_sequences = [theta, V_re, V_im, hidden_bias, scale, out_bias, U]
-    if out_every_t:
-        sequences = [x, y]
-    else:
-        sequences = [x, T.tile(theano.shared(np.zeros((1,1), dtype=theano.config.floatX)), [x.shape[0], 1, 1])]
+    sequences = [x, y]
     [hidden_states, cost_steps], updates = theano.scan(fn=recurrence,
                                                                   sequences=sequences,
                                                                   non_sequences=non_sequences,
-                                                                  outputs_info=[h_0_batch, theano.shared(np.float32(0.0))])
+                                                                  outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
 
     # TODO: if not out every t, we compute lin_output here
     # if out every t, we comput it in the recurrence

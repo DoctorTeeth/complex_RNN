@@ -80,7 +80,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     # we'd like to add another dimension to the front of y's shape for both
     # train and test, so that train_y is (10,)
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     #######################################################################
 
