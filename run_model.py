@@ -79,7 +79,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     #######################################################################
 
-    # W_params = [theta]
+    scale = theano.shared(np.ones((n_hidden,), dtype=theano.config.floatX),
+                          name='scale')
+    W_params = [scale]
 
     # configure the activation and loss
     if loss_function == 'CE':
@@ -105,6 +107,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                                             activate,
                                             mask,
                                             inputs,
+                                            W_params,
                                             loss_function=loss_function)
     if use_scale is False:
         parameters.pop()
