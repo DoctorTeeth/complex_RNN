@@ -9,7 +9,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 mask,
                 inputs,
                 W_params,
-                index_permute,
                 W_ops,
                 loss_function='CE'):
 

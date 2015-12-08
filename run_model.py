@@ -120,7 +120,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                                             mask,
                                             inputs,
                                             W_params,
-                                            index_permute,
                                             W_ops,
                                             loss_function=loss_function)
     if use_scale is False:
