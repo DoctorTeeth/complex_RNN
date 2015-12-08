@@ -86,23 +86,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                                                        outputs_info=[h_0_batch, T.zeros_like(y[0])] )
 
 
-    # TODO: can we get rid of cost_prev?
-    def cost_fn(rnn_out, y_t, cost_prev):
-        if loss_function == 'CE':
-            cost_t = T.nnet.categorical_crossentropy(rnn_out, y_t).mean()
-        elif loss_function == 'MSE':
-            cost_t = ((rnn_out - y_t)**2).mean()
-
-        return cost_t
-
-    cost_steps, upd = theano.scan(fn=cost_fn,
-                                    sequences=[rnn_outs, y],
-                                    outputs_info=[ theano.shared(np.float64(0.0)) ] )
-
-    cost = mask(cost_steps)
-
-    cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-    costs = [cost_penalty, cost]
 
     # TODO: we should return outputs instead of costs
-    return parameters, costs
+    return parameters, rnn_outs

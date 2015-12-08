@@ -111,7 +111,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
               lambda accum: ut.scale_diag(accum, n_hidden, scale)
     ]
 
-    parameters, costs = complex_RNN(n_input,
+    parameters, rnn_outs      = complex_RNN(n_input,
                                             n_hidden,
                                             n_output,
                                             scale_penalty,
@@ -123,7 +123,25 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                                             W_ops,
                                             loss_function=loss_function)
     if use_scale is False:
-        parameters.pop()
+        parameters.pop() # this will mess us up if we add parameters and W_params in the model code
+
+    # TODO: can we get rid of cost_prev?
+    def cost_fn(rnn_out, y_t, cost_prev):
+        if loss_function == 'CE':
+            cost_t = T.nnet.categorical_crossentropy(rnn_out, y_t).mean()
+        elif loss_function == 'MSE':
+            cost_t = ((rnn_out - y_t)**2).mean()
+
+        return cost_t
+
+    cost_steps, upd = theano.scan(fn=cost_fn,
+                                    sequences=[rnn_outs, y],
+                                    outputs_info=[ theano.shared(np.float64(0.0)) ] )
+
+    cost = mask(cost_steps)
+
+    cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
+    costs = [cost_penalty, cost]
 
     # TODO: complex_RNN will return outputs instead of costs
     # then here we will do costs = func(outputs)
