@@ -81,7 +81,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     scale = theano.shared(np.ones((n_hidden,), dtype=theano.config.floatX),
                           name='scale')
-    W_params = [scale]
+    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
+    W_params = [theta, scale]
 
     # configure the activation and loss
     if loss_function == 'CE':

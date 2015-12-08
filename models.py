@@ -12,7 +12,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 loss_function='CE'):
 
     [x,y] = inputs
-    [scale] = W_params
+    [theta, scale] = W_params
 
     # Initialize parameters: theta, V_re, V_im, hidden_bias, U, out_bias, h_0
     V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
@@ -26,7 +26,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
     reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     out_bias = theano.shared(np.zeros((n_output,), dtype=theano.config.floatX), name='out_bias')
-    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
     bucket = np.sqrt(2.) * np.sqrt(3. / 2 / n_hidden)
     h_0 = theano.shared(np.asarray(rng.uniform(low=-bucket,
                                                high=bucket,
@@ -36,8 +35,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
 
     # parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
-    W_params = [scale]
-    parameters = [V_re, V_im, U, hidden_bias, out_bias, h_0, theta]
+    W_params = [theta, scale]
+    parameters = [V_re, V_im, U, hidden_bias, out_bias, h_0]
     parameters += W_params
 
     index_permute = np.random.permutation(n_hidden)
