@@ -82,13 +82,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
         RNN_output = activate(lin_output)
 
-        # if loss_function == 'CE':
-        #     cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
-        # elif loss_function == 'MSE':
-        #     cost_t = ((RNN_output - y_t)**2).mean()
-
-        # TODO: replace cost_t with lin_output
-        return h_t, RNN_output # TODO: now we have to change outputs_info for this
+        return h_t, RNN_output
 
     # compute hidden states
     h_0_batch = T.tile(h_0, [x.shape[1], 1])
