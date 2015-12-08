@@ -9,11 +9,13 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 mask,
                 inputs,
                 W_params,
+                index_permute,
                 loss_function='CE'):
 
     [x,y] = inputs
     [theta, scale] = W_params #TODO: don't do this - but that happens
     # automatically when we do W_ops outside the model
+
 
     # Initialize parameters: theta, V_re, V_im, hidden_bias, U, out_bias, h_0
     V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
@@ -40,7 +42,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     parameters = [V_re, V_im, U, hidden_bias, out_bias, h_0]
     parameters += W_params
 
-    index_permute = np.random.permutation(n_hidden)
 
     # specify computation of the hidden-to-hidden transform
     W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
