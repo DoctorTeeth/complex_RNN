@@ -53,7 +53,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     # define the recurrence used by theano.scan - U maps hidden to output
     def recurrence(x_t, h_prev, rnno_prev, V_re, V_im, hidden_bias, out_bias, U):
         # TODO: there must be a way to tell it we don't use cost_prev during the calculation
-        # TODO: once we finish moving steps out of the loop, we can not pass U params to recurrence anymore
 
         hidden_lin_output = reduce(lambda x,f : f(x), W_ops, h_prev)
 
@@ -79,7 +78,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
         lin_output = T.dot(h_t, U) + out_bias.dimshuffle('x', 0)
 
-
         RNN_output = activate(lin_output)
 
         return h_t, RNN_output
@@ -88,12 +86,14 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     h_0_batch = T.tile(h_0, [x.shape[1], 1])
     non_sequences = [V_re, V_im, hidden_bias, out_bias, U]
     sequences = [x]
+    # TODO: can we get rid of "hidden states" and "updates"?
     [hidden_states, rnn_outs], updates = theano.scan(fn=recurrence,
                                                        sequences=sequences,
                                                        non_sequences=non_sequences,
                                                        outputs_info=[h_0_batch, T.zeros_like(y[0])] )
 
 
+    # TODO: can we get rid of cost_prev?
     def cost_fn(rnn_out, y_t, cost_prev):
         if loss_function == 'CE':
             cost_t = T.nnet.categorical_crossentropy(rnn_out, y_t).mean()
