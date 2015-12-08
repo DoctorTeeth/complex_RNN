@@ -93,13 +93,18 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     else:
         mask = lambda v: v.mean()
 
-    inputs, parameters, costs = complex_RNN(n_input,
+    x = T.tensor3()
+    y = T.tensor3()
+    inputs = [x,y]
+
+    parameters, costs = complex_RNN(n_input,
                                             n_hidden,
                                             n_output,
                                             scale_penalty,
                                             rng,
                                             activate,
                                             mask,
+                                            inputs,
                                             loss_function=loss_function)
     if use_scale is False:
         parameters.pop()

@@ -7,8 +7,10 @@ import utils as ut
 def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 activate,
                 mask,
+                inputs,
                 loss_function='CE'):
 
+    [x,y] = inputs
 
     # Initialize parameters: theta, V_re, V_im, hidden_bias, U, out_bias, h_0
     V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
@@ -36,8 +38,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     # parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
     parameters = [V_re, V_im, U, hidden_bias, out_bias, theta, h_0, scale]
 
-    x = T.tensor3()
-    y = T.tensor3()
     index_permute = np.random.permutation(n_hidden)
 
     # specify computation of the hidden-to-hidden transform
@@ -112,4 +112,4 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     costs = [cost_penalty, cost]
 
     # TODO: we should return outputs instead of costs
-    return [x, y], parameters, costs
+    return parameters, costs
