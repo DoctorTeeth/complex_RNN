@@ -27,7 +27,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                                            dtype=theano.config.floatX),
                                 name='hidden_bias')
 
-    reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     out_bias = theano.shared(np.zeros((n_output,), dtype=theano.config.floatX), name='out_bias')
     bucket = np.sqrt(2.) * np.sqrt(3. / 2 / n_hidden)
     h_0 = theano.shared(np.asarray(rng.uniform(low=-bucket,
@@ -86,6 +85,4 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                                                        outputs_info=[h_0_batch, T.zeros_like(y[0])] )
 
 
-
-    # TODO: we should return outputs instead of costs
     return parameters, rnn_outs

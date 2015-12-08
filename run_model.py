@@ -79,6 +79,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     #######################################################################
 
+    # reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     scale = theano.shared(np.ones((n_hidden,), dtype=theano.config.floatX),
                           name='scale')
     theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
