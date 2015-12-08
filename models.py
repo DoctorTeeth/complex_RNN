@@ -10,6 +10,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 inputs,
                 W_params,
                 index_permute,
+                W_ops,
                 loss_function='CE'):
 
     [x,y] = inputs
@@ -42,16 +43,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     parameters = [V_re, V_im, U, hidden_bias, out_bias, h_0]
     parameters += W_params
 
-
-    # specify computation of the hidden-to-hidden transform
-    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
-              # lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
-              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
-              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
-              # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
-              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
-              lambda accum: ut.scale_diag(accum, n_hidden, scale)
-    ]
 
     # define the recurrence used by theano.scan - U maps hidden to output
     def recurrence(x_t, h_prev, rnno_prev, V_re, V_im, hidden_bias, out_bias, U):
