@@ -6,12 +6,10 @@ import utils as ut
 
 def complex_RNN(n_input, n_hidden, n_output, rng,
                 activate,
-                inputs,
+                inputs, 
                 W_ops):
 
     [x,y] = inputs
-    # automatically when we do W_ops outside the model
-
 
     # Initialize parameters: V_re, V_im, hidden_bias, U, out_bias, h_0
     V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
