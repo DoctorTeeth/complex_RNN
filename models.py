@@ -51,7 +51,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     ]
 
     # define the recurrence used by theano.scan - U maps hidden to output
-    def recurrence(x_t, y_t, h_prev, rnno_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
+    def recurrence(x_t, h_prev, rnno_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
         # TODO: there must be a way to tell it we don't use cost_prev during the calculation
         # TODO: once we finish moving steps out of the loop, we can not pass U params to recurrence anymore
 
@@ -93,7 +93,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     # compute hidden states
     h_0_batch = T.tile(h_0, [x.shape[1], 1])
     non_sequences = [theta, V_re, V_im, hidden_bias, scale, out_bias, U]
-    sequences = [x, y]
+    sequences = [x]
     [hidden_states, rnn_outs], updates = theano.scan(fn=recurrence,
                                                        sequences=sequences,
                                                        non_sequences=non_sequences,
