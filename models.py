@@ -112,10 +112,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
             cost = T.nnet.categorical_crossentropy(RNN_output, y).mean()
             cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
 
-            # compute accuracy
-            accuracy = T.mean(T.eq(T.argmax(RNN_output, axis=-1), T.argmax(y, axis=-1)))
-
-            costs = [cost_penalty, cost, accuracy]
+            costs = [cost_penalty, cost]
         elif loss_function == 'MSE':
             cost = cost_steps[-1]
             # import pdb; pdb.set_trace()
@@ -127,7 +124,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     else:
         cost = cost_steps.mean()
         cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-        costs = [cost_penalty, cost, accuracy]
+        costs = [cost_penalty, cost]
 
 
     # TODO: we should return outputs instead of costs
