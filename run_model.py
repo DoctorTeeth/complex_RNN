@@ -120,11 +120,12 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                                             activate,
                                             mask,
                                             inputs,
-                                            W_params,
                                             W_ops,
                                             loss_function=loss_function)
     if use_scale is False:
         parameters.pop() # this will mess us up if we add parameters and W_params in the model code
+
+    parameters += W_params
 
     # TODO: can we get rid of cost_prev?
     def cost_fn(rnn_out, y_t, cost_prev):

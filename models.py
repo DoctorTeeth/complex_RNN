@@ -8,16 +8,14 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 activate,
                 mask,
                 inputs,
-                W_params, # TODO: this function shouldn't need this argument
                 W_ops,
                 loss_function='CE'):
 
     [x,y] = inputs
-    [theta, scale] = W_params #TODO: don't do this - but that happens
     # automatically when we do W_ops outside the model
 
 
-    # Initialize parameters: theta, V_re, V_im, hidden_bias, U, out_bias, h_0
+    # Initialize parameters: V_re, V_im, hidden_bias, U, out_bias, h_0
     V_re = ut.initialize_matrix(n_input, n_hidden, 'V_re', rng)
     V_im = ut.initialize_matrix(n_input, n_hidden, 'V_im', rng)
     U = ut.initialize_matrix(2 * n_hidden, n_output, 'U', rng)
@@ -36,10 +34,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                         name='h_0')
 
 
-    # parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
-    W_params = [theta, scale]
     parameters = [V_re, V_im, U, hidden_bias, out_bias, h_0]
-    parameters += W_params
 
 
     # define the recurrence used by theano.scan - U maps hidden to output
