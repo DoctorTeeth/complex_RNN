@@ -51,7 +51,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     ]
 
     # define the recurrence used by theano.scan - U maps hidden to output
-    def recurrence(x_t, y_t, h_prev, cost_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
+    def recurrence(x_t, y_t, h_prev, rnno_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
         # TODO: there must be a way to tell it we don't use cost_prev during the calculation
         # TODO: once we finish moving steps out of the loop, we can not pass U params to recurrence anymore
 
@@ -82,23 +82,35 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
         RNN_output = activate(lin_output)
 
-        if loss_function == 'CE':
-            cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
-        elif loss_function == 'MSE':
-            cost_t = ((RNN_output - y_t)**2).mean()
+        # if loss_function == 'CE':
+        #     cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
+        # elif loss_function == 'MSE':
+        #     cost_t = ((RNN_output - y_t)**2).mean()
 
         # TODO: replace cost_t with lin_output
-        return h_t, cost_t
+        return h_t, RNN_output # TODO: now we have to change outputs_info for this
 
     # compute hidden states
     h_0_batch = T.tile(h_0, [x.shape[1], 1])
     non_sequences = [theta, V_re, V_im, hidden_bias, scale, out_bias, U]
     sequences = [x, y]
-    [hidden_states, cost_steps], updates = theano.scan(fn=recurrence,
+    [hidden_states, rnn_outs], updates = theano.scan(fn=recurrence,
                                                        sequences=sequences,
                                                        non_sequences=non_sequences,
-                                                       outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
+                                                       outputs_info=[h_0_batch, T.zeros_like(y[0])] )
 
+
+    def cost_fn(rnn_out, y_t, cost_prev):
+        if loss_function == 'CE':
+            cost_t = T.nnet.categorical_crossentropy(rnn_out, y_t).mean()
+        elif loss_function == 'MSE':
+            cost_t = ((rnn_out - y_t)**2).mean()
+
+        return cost_t
+
+    [cost_steps], upd = theano.scan(fn=cost_fn,
+                                    sequences = [rnn_outs, y],
+                                    outputs_info = [theano.shared(np.float64(0.0))] )
 
     cost = mask(cost_steps)
 
@@ -106,5 +118,4 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     costs = [cost_penalty, cost]
 
     # TODO: we should return outputs instead of costs
-    # I think at this point we can return linear_outputs
     return [x, y], parameters, costs
