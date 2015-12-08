@@ -6,7 +6,7 @@ import utils as ut
 
 def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 activate,
-                out_every_t=False,
+                mask,
                 loss_function='CE'):
 
 
@@ -58,7 +58,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
         hidden_lin_output = reduce(lambda x,f : f(x), W_ops, h_prev)
 
         # Compute data linear transform
-        data_lin_output_re = T.dot(x_t, V_re) # does the unpacking of the 2 dimensions happen here?
+        data_lin_output_re = T.dot(x_t, V_re) 
         data_lin_output_im = T.dot(x_t, V_im)
         data_lin_output = T.concatenate([data_lin_output_re, data_lin_output_im], axis=1)
 
@@ -99,11 +99,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                                                        non_sequences=non_sequences,
                                                        outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
 
-    if not out_every_t:
-        cost = cost_steps[-1]
-    else:
-        # TODO: collapse both of these statements into one using a mask
-        cost = cost_steps.mean()
+
+    cost = mask(cost_steps)
 
     cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
     costs = [cost_penalty, cost]
