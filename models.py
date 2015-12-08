@@ -36,7 +36,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                           name='scale')
 
     # parameters = [V_re, V_im, U, hidden_bias, reflection, out_bias, theta, h_0, scale]
-    parameters = [V_re, V_im, U, hidden_bias, out_bias, theta, h_0, scale]
+    parameters = [V_re, V_im, U, hidden_bias, out_bias, h_0, theta, scale]
 
     index_permute = np.random.permutation(n_hidden)
 
