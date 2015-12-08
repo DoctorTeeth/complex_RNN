@@ -99,29 +99,18 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                                                        outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
 
     # TODO: if not out every t, we compute lin_output here
-    # if out every t, we comput it in the recurrence
+    # if out every t, we compute it in the recurrence
     # this is gross and we can likely get rid of it with a mask
     # but, I understand why we output hidden_states at this moment I guess
     if not out_every_t:
-        lin_output = T.dot(hidden_states[-1,:,:], U) + out_bias.dimshuffle('x', 0)
-
         # define the cost # TODO: we shouldn't have to recompute any cost here
         # ought to just be able to take the last part of cost_steps
-        if loss_function == 'CE':
-            RNN_output = T.nnet.softmax(lin_output)
-            cost = T.nnet.categorical_crossentropy(RNN_output, y).mean()
-            cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-
-            costs = [cost_penalty, cost]
-        elif loss_function == 'MSE':
-            cost = cost_steps[-1]
-            # import pdb; pdb.set_trace()
-            cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-
-            costs = [cost_penalty, cost]
-
+        cost = cost_steps[-1]
+        cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
+        costs = [cost_penalty, cost]
 
     else:
+        # TODO: collapse both of these statements into one using a mask
         cost = cost_steps.mean()
         cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
         costs = [cost_penalty, cost]
