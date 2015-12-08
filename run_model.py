@@ -77,13 +77,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     test_y_last = np.reshape(test_y_last, (n_test, 1))
     test_y[-1] = test_y_last
 
-
-    # so train_x is (10,100k,2)
-    # an train_y is (100k,1)
-    # we'd like to add another dimension to the front of y's shape for both
-    # train and test, so that train_y is (10,)
-
-
     #######################################################################
 
     # W_params = [theta]
