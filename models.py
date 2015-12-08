@@ -77,11 +77,18 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                              nonlin_output_im], axis=1)
 
         lin_output = T.dot(h_t, U) + out_bias.dimshuffle('x', 0)
+
         if loss_function == 'CE':
-            RNN_output = T.nnet.softmax(lin_output)
+            activate = lambda v: T.nnet.softmax(v)
+        else:
+            activate = lambda v: v
+
+        RNN_output = activate(lin_output)
+
+        if loss_function == 'CE':
             cost_t = T.nnet.categorical_crossentropy(RNN_output, y_t).mean()
         elif loss_function == 'MSE':
-            cost_t = ((lin_output - y_t)**2).mean()
+            cost_t = ((RNN_output - y_t)**2).mean()
 
         # TODO: replace cost_t with lin_output
         return h_t, cost_t
