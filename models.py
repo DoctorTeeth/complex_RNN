@@ -108,9 +108,9 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
         return cost_t
 
-    [cost_steps], upd = theano.scan(fn=cost_fn,
-                                    sequences = [rnn_outs, y],
-                                    outputs_info = [theano.shared(np.float64(0.0))] )
+    cost_steps, upd = theano.scan(fn=cost_fn,
+                                    sequences=[rnn_outs, y],
+                                    outputs_info=[ theano.shared(np.float64(0.0)) ] )
 
     cost = mask(cost_steps)
 
