@@ -8,7 +8,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                 activate,
                 mask,
                 inputs,
-                W_params,
+                W_params, # TODO: this function shouldn't need this argument
                 W_ops,
                 loss_function='CE'):
 
