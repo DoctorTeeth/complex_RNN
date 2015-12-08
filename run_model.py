@@ -97,6 +97,10 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     if use_scale is False:
         parameters.pop()
 
+    # TODO: complex_RNN will return outputs instead of costs
+    # then here we will do costs = func(outputs)
+    # then we can eliminate a lot of arg passing
+
     gradients = T.grad(costs[0], parameters)
 
     s_train_x = theano.shared(train_x)

@@ -52,10 +52,7 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     # define the recurrence used by theano.scan - U maps hidden to output
     def recurrence(x_t, y_t, h_prev, cost_prev, theta, V_re, V_im, hidden_bias, scale, out_bias, U):
         # TODO: there must be a way to tell it we don't use cost_prev during the calculation
-        # TODO: we'll need to make do_fft take more args
         # TODO: once we finish moving steps out of the loop, we can not pass U params to recurrence anymore
-        # TODO: may have to append onto a list of steps
-        # depends how theano compiler works
 
         hidden_lin_output = reduce(lambda x,f : f(x), W_ops, h_prev)
 
@@ -98,23 +95,14 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
                                                        non_sequences=non_sequences,
                                                        outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
 
-    # TODO: if not out every t, we compute lin_output here
-    # if out every t, we compute it in the recurrence
-    # this is gross and we can likely get rid of it with a mask
-    # but, I understand why we output hidden_states at this moment I guess
     if not out_every_t:
-        # define the cost # TODO: we shouldn't have to recompute any cost here
-        # ought to just be able to take the last part of cost_steps
         cost = cost_steps[-1]
-        cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-        costs = [cost_penalty, cost]
-
     else:
         # TODO: collapse both of these statements into one using a mask
         cost = cost_steps.mean()
-        cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
-        costs = [cost_penalty, cost]
 
+    cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
+    costs = [cost_penalty, cost]
 
     # TODO: we should return outputs instead of costs
     # I think at this point we can return linear_outputs
