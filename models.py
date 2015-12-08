@@ -5,6 +5,7 @@ import utils as ut
 
 
 def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
+                activate,
                 out_every_t=False,
                 loss_function='CE'):
 
@@ -78,10 +79,6 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
         lin_output = T.dot(h_t, U) + out_bias.dimshuffle('x', 0)
 
-        if loss_function == 'CE':
-            activate = lambda v: T.nnet.softmax(v)
-        else:
-            activate = lambda v: v
 
         RNN_output = activate(lin_output)
 

@@ -88,11 +88,17 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     # W_params = [theta]
 
+    if loss_function == 'CE':
+        activate = lambda v: T.nnet.softmax(v)
+    else:
+        activate = lambda v: v
+
     inputs, parameters, costs = complex_RNN(n_input,
                                             n_hidden,
                                             n_output,
                                             scale_penalty,
                                             rng,
+                                            activate,
                                             loss_function=loss_function)
     if use_scale is False:
         parameters.pop()
