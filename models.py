@@ -4,12 +4,10 @@ import numpy as np
 import utils as ut
 
 
-def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
+def complex_RNN(n_input, n_hidden, n_output, rng,
                 activate,
-                mask,
                 inputs,
-                W_ops,
-                loss_function='CE'):
+                W_ops):
 
     [x,y] = inputs
     # automatically when we do W_ops outside the model

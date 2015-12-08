@@ -115,13 +115,10 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     parameters, rnn_outs      = complex_RNN(n_input,
                                             n_hidden,
                                             n_output,
-                                            scale_penalty,
                                             rng,
                                             activate,
-                                            mask,
                                             inputs,
-                                            W_ops,
-                                            loss_function=loss_function)
+                                            W_ops)
     if use_scale is False:
         parameters.pop() # this will mess us up if we add parameters and W_params in the model code
 
@@ -144,10 +141,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
     costs = [cost_penalty, cost]
-
-    # TODO: complex_RNN will return outputs instead of costs
-    # then here we will do costs = func(outputs)
-    # then we can eliminate a lot of arg passing
 
     gradients = T.grad(costs[0], parameters)
 
