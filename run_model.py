@@ -17,6 +17,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
          savefile, scale_penalty, use_scale,
          model, loss_function):
 
+    theano.config.optimizer='None'
+    theano.config.exception_verbosity='high'
+
     np.random.seed(1234)
     rng = np.random.RandomState(1234)
 
@@ -80,7 +83,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     # we'd like to add another dimension to the front of y's shape for both
     # train and test, so that train_y is (10,)
 
-    # import pdb; pdb.set_trace()
 
     #######################################################################
 
@@ -111,7 +113,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     updates, rmsprop = rms_prop(learning_rate, parameters, gradients)
 
     givens = {inputs[0] : s_train_x[:, n_batch * index : n_batch * (index + 1), :],
-              inputs[1] : s_train_y[n_batch * index : n_batch * (index + 1), :]}
+              inputs[1] : s_train_y[:, n_batch * index : n_batch * (index + 1), :]}
 
     givens_test = {inputs[0] : s_test_x,
                    inputs[1] : s_test_y}

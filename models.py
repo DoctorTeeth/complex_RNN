@@ -94,9 +94,9 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     non_sequences = [theta, V_re, V_im, hidden_bias, scale, out_bias, U]
     sequences = [x, y]
     [hidden_states, cost_steps], updates = theano.scan(fn=recurrence,
-                                                                  sequences=sequences,
-                                                                  non_sequences=non_sequences,
-                                                                  outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
+                                                       sequences=sequences,
+                                                       non_sequences=non_sequences,
+                                                       outputs_info=[h_0_batch, theano.shared(np.float64(0.0))])
 
     # TODO: if not out every t, we compute lin_output here
     # if out every t, we comput it in the recurrence
@@ -105,7 +105,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
     if not out_every_t:
         lin_output = T.dot(hidden_states[-1,:,:], U) + out_bias.dimshuffle('x', 0)
 
-        # define the cost
+        # define the cost # TODO: we shouldn't have to recompute any cost here
+        # ought to just be able to take the last part of cost_steps
         if loss_function == 'CE':
             RNN_output = T.nnet.softmax(lin_output)
             cost = T.nnet.categorical_crossentropy(RNN_output, y).mean()
@@ -116,7 +117,8 @@ def complex_RNN(n_input, n_hidden, n_output, scale_penalty, rng,
 
             costs = [cost_penalty, cost, accuracy]
         elif loss_function == 'MSE':
-            cost = ((lin_output - y)**2).mean()
+            cost = cost_steps[-1]
+            # import pdb; pdb.set_trace()
             cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
 
             costs = [cost_penalty, cost]
