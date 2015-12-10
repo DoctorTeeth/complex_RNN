@@ -211,6 +211,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
             cPickle.dump(save_vals,
                          file(savefile, 'wb'),
                          cPickle.HIGHEST_PROTOCOL)
+    return savefile
 
 if __name__=="__main__":
 
@@ -239,4 +240,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    main(**kwargs)
+    fp = main(**kwargs)
+    from plotter import generate_graph
+    print fp
+    generate_graph(fp)

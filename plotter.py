@@ -15,7 +15,7 @@ and ys (the cost at that step) and the label for the graph.
 So the one task we have is:
 read this out and generate the plot.
 """
-def plotter(files):
+def generate_graph(files):
 
     for f in files:
         with open(f, 'rb') as pickle_file:
@@ -37,7 +37,8 @@ def plotter(files):
     plt.legend(loc='upper right')
     plt.show()
 
-show_test = sys.argv[1]
-files = sys.argv[2:] # all other arguments are results files
-print files
-plotter(files)
+if __name__ == "__main__":
+    show_test = sys.argv[1]
+    files = sys.argv[2:] # all other arguments are results files
+    print files
+    generate_graph(files)
