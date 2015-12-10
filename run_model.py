@@ -14,11 +14,11 @@ import argparse, timeit
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
 def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
-         savefile, scale_penalty, use_scale,
+         savefile, 
          model, loss_function):
 
-    theano.config.optimizer='None'
-    theano.config.exception_verbosity='high'
+    # theano.config.optimizer='None'
+    # theano.config.exception_verbosity='high'
 
     np.random.seed(1234)
     rng = np.random.RandomState(1234)
@@ -80,11 +80,9 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     #######################################################################
 
     # reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
-    scale = theano.shared(np.ones((n_hidden,), dtype=theano.config.floatX),
-                          name='scale')
     theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
     index_permute = np.random.permutation(n_hidden)
-    W_params = [theta, scale]
+    W_params = [theta]
 
     # configure the activation and loss
     if loss_function == 'CE':
@@ -109,7 +107,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
               lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
               # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
               lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
-              lambda accum: ut.scale_diag(accum, n_hidden, scale)
     ]
 
     parameters, rnn_outs      = complex_RNN(n_input,
@@ -119,8 +116,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
                                             activate,
                                             inputs,
                                             W_ops)
-    if use_scale is False:
-        parameters.pop() # this will mess us up if we add parameters and W_params in the model code
 
     parameters += W_params
 
@@ -139,7 +134,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     cost = mask(cost_steps)
 
-    cost_penalty = cost + scale_penalty * ((scale - 1) ** 2).sum()
+    cost_penalty = cost
     costs = [cost_penalty, cost]
 
     gradients = T.grad(costs[0], parameters)
@@ -221,8 +216,6 @@ if __name__=="__main__":
     parser.add_argument("--time_steps", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
-    parser.add_argument("--scale_penalty", type=float, default=5)
-    parser.add_argument("--use_scale", default=True)
     parser.add_argument("--model", default='complex_RNN')
     parser.add_argument("--loss_function", default='MSE')
 
@@ -235,8 +228,6 @@ if __name__=="__main__":
               'time_steps': arg_dict['time_steps'],
               'learning_rate': np.float32(arg_dict['learning_rate']),
               'savefile': arg_dict['savefile'],
-              'scale_penalty': arg_dict['scale_penalty'],
-              'use_scale': arg_dict['use_scale'],
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
