@@ -29,6 +29,24 @@ def basic(n_hidden, rng):
 
     return W_params, W_ops
 
+def with_reflection(n_hidden, rng):
+
+    reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
+    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
+    index_permute = np.random.permutation(n_hidden)
+    W_params = [theta]
+
+    # specify computation of the hidden-to-hidden transform
+    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
+              lambda accum: ut.times_reflection(accum, n_hidden, reflection[0,:]),
+              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
+              lambda accum: ut.times_reflection(accum, n_hidden, reflection[1,:]),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
+    ]
+
+    return W_params, W_ops
+
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
 def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
