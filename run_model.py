@@ -11,10 +11,28 @@ from models import *
 from optimizations import *
 import argparse, timeit
 
+def basic(n_hidden, rng):
+
+    # reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
+    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
+    index_permute = np.random.permutation(n_hidden)
+    W_params = [theta]
+
+    # specify computation of the hidden-to-hidden transform
+    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
+              # lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
+              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
+              # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
+    ]
+
+    return W_params, W_ops
+
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
 def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
-         savefile, 
+         savefile, W_func,
          model, loss_function):
 
     # theano.config.optimizer='None'
@@ -78,11 +96,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     test_y[-1] = test_y_last
 
     #######################################################################
+    W_params, W_ops = W_func(n_hidden, rng)
 
-    # reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
-    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
-    index_permute = np.random.permutation(n_hidden)
-    W_params = [theta]
 
     # configure the activation and loss
     if loss_function == 'CE':
@@ -100,14 +115,6 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     y = T.tensor3()
     inputs = [x,y]
 
-    # specify computation of the hidden-to-hidden transform
-    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
-              # lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
-              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
-              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
-              # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
-              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
-    ]
 
     parameters, rnn_outs      = complex_RNN(n_input,
                                             n_hidden,
@@ -228,6 +235,7 @@ if __name__=="__main__":
               'time_steps': arg_dict['time_steps'],
               'learning_rate': np.float32(arg_dict['learning_rate']),
               'savefile': arg_dict['savefile'],
+              'W_func': basic,
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
