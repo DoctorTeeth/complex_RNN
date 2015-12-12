@@ -13,24 +13,6 @@ import argparse, timeit
 
 def basic(n_hidden, rng):
 
-    # reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
-    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
-    index_permute = np.random.permutation(n_hidden)
-    W_params = [theta]
-
-    # specify computation of the hidden-to-hidden transform
-    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
-              # lambda accum: times_reflection(accum, n_hidden, reflection[0,:]),
-              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
-              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
-              # lambda accum: times_reflection(accum, n_hidden, reflection[1,:]),
-              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
-    ]
-
-    return W_params, W_ops
-
-def with_reflection(n_hidden, rng):
-
     reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
     index_permute = np.random.permutation(n_hidden)
@@ -45,7 +27,25 @@ def with_reflection(n_hidden, rng):
               lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
     ]
 
-    return W_params, W_ops
+    return W_params, W_ops, "basic"
+
+def no_permutation(n_hidden, rng):
+
+    reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
+    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
+    index_permute = np.random.permutation(n_hidden)
+    W_params = [theta]
+
+    # specify computation of the hidden-to-hidden transform
+    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
+              lambda accum: ut.times_reflection(accum, n_hidden, reflection[0,:]),
+              # lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
+              lambda accum: ut.times_reflection(accum, n_hidden, reflection[1,:]),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
+    ]
+
+    return W_params, W_ops, "no_permutation"
 
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
@@ -114,7 +114,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     test_y[-1] = test_y_last
 
     #######################################################################
-    W_params, W_ops = W_func(n_hidden, rng)
+    W_params, W_ops, prefix = W_func(n_hidden, rng)
+    savefile = prefix + "_" + savefile
 
 
     # configure the activation and loss
@@ -258,8 +259,12 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    fp = main(**kwargs)
-    from plotter import generate_graph
-    print fp
+    model_list = [basic, no_permutation]
     show_test = False
-    generate_graph([fp], show_test)
+    from plotter import generate_graph
+    fps = []
+    for model in model_list:
+        kwargs['W_func'] = model
+        fps.append(main(**kwargs))
+
+    generate_graph(fps, show_test)
