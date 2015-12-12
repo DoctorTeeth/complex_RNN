@@ -261,4 +261,5 @@ if __name__=="__main__":
     fp = main(**kwargs)
     from plotter import generate_graph
     print fp
-    generate_graph(fp)
+    show_test = False
+    generate_graph([fp], show_test)
