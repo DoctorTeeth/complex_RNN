@@ -33,7 +33,6 @@ def no_permutation(n_hidden, rng):
 
     reflection = ut.initialize_matrix(2, 2*n_hidden, 'reflection', rng)
     theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
-    index_permute = np.random.permutation(n_hidden)
     W_params = [theta]
 
     # specify computation of the hidden-to-hidden transform
@@ -56,8 +55,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     # theano.config.optimizer='None'
     # theano.config.exception_verbosity='high'
 
-    np.random.seed(1234)
-    rng = np.random.RandomState(1234)
+    # np.random.seed(1234)
+    # rng = np.random.RandomState(1234)
 
     # --- Set data params ----------------
     n_input = 2
@@ -237,10 +236,10 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(
         description="training a model")
-    parser.add_argument("--n_iter", type=int, default=20000)
+    parser.add_argument("--n_iter", type=int, default=5000)
     parser.add_argument("--n_batch", type=int, default=20)
-    parser.add_argument("--n_hidden", type=int, default=256)
-    parser.add_argument("--time_steps", type=int, default=200)
+    parser.add_argument("--n_hidden", type=int, default=128)
+    parser.add_argument("--time_steps", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
     parser.add_argument("--model", default='complex_RNN')
@@ -259,7 +258,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [no_permutation]
+    model_list = [basic, no_permutation]
     show_test = False
     from plotter import generate_graph
     fps = []
