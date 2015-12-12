@@ -46,4 +46,4 @@ if __name__ == "__main__":
         st = False
     fs = sys.argv[2:] # all other arguments are results files
     print fs
-    generate_graph(fs, False)
+    generate_graph(fs, st)
