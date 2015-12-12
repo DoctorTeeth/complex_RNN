@@ -198,7 +198,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
             data_x = s_train_x.get_value()
             s_train_x.set_value(data_x[:,inds,:])
             data_y = s_train_y.get_value()
-            s_train_y.set_value(data_y[inds,:])
+            s_train_y.set_value(data_y[:,inds,:])
 
         mse = train(i % int(num_batches))
         train_loss.append(mse)
@@ -237,10 +237,10 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(
         description="training a model")
-    parser.add_argument("--n_iter", type=int, default=100)
+    parser.add_argument("--n_iter", type=int, default=20000)
     parser.add_argument("--n_batch", type=int, default=20)
     parser.add_argument("--n_hidden", type=int, default=256)
-    parser.add_argument("--time_steps", type=int, default=10)
+    parser.add_argument("--time_steps", type=int, default=200)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
     parser.add_argument("--model", default='complex_RNN')
@@ -259,7 +259,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [basic, no_permutation]
+    model_list = [no_permutation]
     show_test = False
     from plotter import generate_graph
     fps = []
