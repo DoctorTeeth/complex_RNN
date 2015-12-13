@@ -55,8 +55,8 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
     # theano.config.optimizer='None'
     # theano.config.exception_verbosity='high'
 
-    # np.random.seed(1234)
-    # rng = np.random.RandomState(1234)
+    np.random.seed(5234)
+    rng = np.random.RandomState(5234)
 
     # --- Set data params ----------------
     n_input = 2
