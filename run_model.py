@@ -197,6 +197,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
             data_x = s_train_x.get_value()
             s_train_x.set_value(data_x[:,inds,:])
             data_y = s_train_y.get_value()
+            # y has same shape as x now
             s_train_y.set_value(data_y[:,inds,:])
 
         mse = train(i % int(num_batches))
