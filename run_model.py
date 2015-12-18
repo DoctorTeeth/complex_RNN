@@ -20,9 +20,11 @@ def basic(n_hidden, rng):
 
     # specify computation of the hidden-to-hidden transform
     W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
+              lambda accum: ut.do_fft(accum, n_hidden),
               lambda accum: ut.times_reflection(accum, n_hidden, reflection[0,:]),
               lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
               lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
+              lambda accum: ut.do_ifft(accum, n_hidden),
               lambda accum: ut.times_reflection(accum, n_hidden, reflection[1,:]),
               lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
     ]
@@ -37,14 +39,34 @@ def no_permutation(n_hidden, rng):
 
     # specify computation of the hidden-to-hidden transform
     W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
+              lambda accum: ut.do_fft(accum, n_hidden),
               lambda accum: ut.times_reflection(accum, n_hidden, reflection[0,:]),
               # lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
               lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
+              lambda accum: ut.do_ifft(accum, n_hidden),
               lambda accum: ut.times_reflection(accum, n_hidden, reflection[1,:]),
               lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
     ]
 
     return W_params, W_ops, "no_permutation"
+
+def no_perm_no_reflec(n_hidden, rng):
+
+    theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
+    W_params = [theta]
+
+    # specify computation of the hidden-to-hidden transform
+    W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
+              lambda accum: ut.do_fft(accum, n_hidden),
+              # lambda accum: ut.times_reflection(accum, n_hidden, reflection[0,:]),
+              # lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
+              lambda accum: ut.do_ifft(accum, n_hidden),
+              # lambda accum: ut.times_reflection(accum, n_hidden, reflection[1,:]),
+              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
+    ]
+
+    return W_params, W_ops, "no_perm_no_reflec"
 
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
@@ -236,10 +258,10 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(
         description="training a model")
-    parser.add_argument("--n_iter", type=int, default=5000)
+    parser.add_argument("--n_iter", type=int, default=30000)
     parser.add_argument("--n_batch", type=int, default=128)
     parser.add_argument("--n_hidden", type=int, default=128)
-    parser.add_argument("--time_steps", type=int, default=200)
+    parser.add_argument("--time_steps", type=int, default=100)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
     parser.add_argument("--model", default='complex_RNN')
@@ -258,7 +280,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [basic, no_permutation]
+    model_list = [basic]
     show_test = False
     from plotter import generate_graph
     fps = []
