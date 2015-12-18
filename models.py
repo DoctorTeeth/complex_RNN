@@ -73,7 +73,7 @@ def complex_RNN(n_input, n_hidden, n_output, rng,
     [hidden_states, rnn_outs], updates = theano.scan(fn=recurrence,
                                                        sequences=sequences,
                                                        non_sequences=non_sequences,
-                                                       outputs_info=[h_0_batch, T.zeros_like(y[0])] )
+                                                       outputs_info=[h_0_batch, T.zeros_like(y[0], dtype=theano.config.floatX)] )
 
 
     return parameters, rnn_outs

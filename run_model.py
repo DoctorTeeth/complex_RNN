@@ -155,7 +155,7 @@ def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
 
     cost_steps, upd = theano.scan(fn=cost_fn,
                                     sequences=[rnn_outs, y],
-                                    outputs_info=[ theano.shared(np.float64(0.0)) ] )
+                                    outputs_info=[ theano.shared(np.float32(0.0)) ] )
 
     cost = mask(cost_steps)
 
@@ -238,9 +238,9 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="training a model")
     parser.add_argument("--n_iter", type=int, default=5000)
-    parser.add_argument("--n_batch", type=int, default=20)
+    parser.add_argument("--n_batch", type=int, default=128)
     parser.add_argument("--n_hidden", type=int, default=128)
-    parser.add_argument("--time_steps", type=int, default=10)
+    parser.add_argument("--time_steps", type=int, default=200)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
     parser.add_argument("--model", default='complex_RNN')
