@@ -15,7 +15,7 @@ and ys (the cost at that step) and the label for the graph.
 So the one task we have is:
 read this out and generate the plot.
 """
-def generate_graph(files, show_test):
+def generate_graph(files, show_test, plot_name):
 
     print files
 
@@ -37,7 +37,7 @@ def generate_graph(files, show_test):
     plt.ylabel("Cost")
     plt.ylim(ymin=0)
     plt.legend(loc='upper right')
-    plt.show()
+    plt.savefig(plot_name)
 
 if __name__ == "__main__":
     if sys.argv[1] == 'test':
@@ -46,4 +46,4 @@ if __name__ == "__main__":
         st = False
     fs = sys.argv[2:] # all other arguments are results files
     print fs
-    generate_graph(fs, st)
+    generate_graph(fs, st, "graph")
