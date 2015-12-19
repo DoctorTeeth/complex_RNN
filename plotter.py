@@ -35,7 +35,7 @@ def generate_graph(files, show_test, plot_name):
 
     plt.xlabel("training sequences")
     plt.ylabel("Cost")
-    plt.ylim(ymin=0)
+    plt.ylim(ymin=0, ymax=1)
     plt.legend(loc='upper right')
     plt.savefig(plot_name)
 

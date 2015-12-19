@@ -280,7 +280,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [basic]
+    model_list = [no_permutation]
     show_test = False
     from plotter import generate_graph
     fps = []
