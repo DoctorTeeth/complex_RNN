@@ -50,23 +50,24 @@ def no_permutation(n_hidden, rng):
 
     return W_params, W_ops, "no_permutation"
 
-def no_perm_no_reflec(n_hidden, rng):
+def no_reflec(n_hidden, rng):
 
     theta = ut.initialize_matrix(3, n_hidden, 'theta', rng)
+    index_permute = np.random.permutation(n_hidden)
     W_params = [theta]
 
     # specify computation of the hidden-to-hidden transform
     W_ops = [ lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]),
               lambda accum: ut.do_fft(accum, n_hidden),
               # lambda accum: ut.times_reflection(accum, n_hidden, reflection[0,:]),
-              # lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
+              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute),
               lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]),
               lambda accum: ut.do_ifft(accum, n_hidden),
               # lambda accum: ut.times_reflection(accum, n_hidden, reflection[1,:]),
               lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]),
     ]
 
-    return W_params, W_ops, "no_perm_no_reflec"
+    return W_params, W_ops, "no_reflec"
 
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
@@ -280,7 +281,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [no_permutation]
+    model_list = [no_reflec]
     show_test = False
     from plotter import generate_graph
     fps = []
