@@ -262,7 +262,7 @@ if __name__=="__main__":
     parser.add_argument("--n_iter", type=int, default=30000)
     parser.add_argument("--n_batch", type=int, default=128)
     parser.add_argument("--n_hidden", type=int, default=128)
-    parser.add_argument("--time_steps", type=int, default=100)
+    parser.add_argument("--time_steps", type=int, default=750)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
     parser.add_argument("--model", default='complex_RNN')
@@ -281,7 +281,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [no_reflec]
+    model_list = [basic, no_permutation, no_reflec]
     show_test = False
     from plotter import generate_graph
     fps = []
