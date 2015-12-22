@@ -69,6 +69,29 @@ def no_reflec(n_hidden, rng):
 
     return W_params, W_ops, "no_reflec"
 
+# TODO: make this generic in number of stack elements
+def stack(n_hidden, rng):
+
+    depth = 2
+    theta = ut.initialize_matrix(depth * 2, n_hidden, 'theta', rng)
+    index_permute = np.random.permutation(n_hidden)
+    W_params = [theta]
+
+    # specify computation of the hidden-to-hidden transform
+    W_ops = [ 
+              lambda accum: ut.times_diag(accum, n_hidden, theta[0,:]), # A
+              lambda accum: ut.do_fft(accum, n_hidden), # C
+              lambda accum: ut.times_diag(accum, n_hidden, theta[1,:]), # D
+              lambda accum: ut.do_ifft(accum, n_hidden), # C
+              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute), # perm
+              lambda accum: ut.times_diag(accum, n_hidden, theta[2,:]), # A
+              lambda accum: ut.do_fft(accum, n_hidden), # C
+              lambda accum: ut.times_diag(accum, n_hidden, theta[3,:]), # D
+              lambda accum: ut.do_ifft(accum, n_hidden), # C
+    ]
+
+    return W_params, W_ops, "stack"
+
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
 def main(n_iter, n_batch, n_hidden, time_steps, learning_rate,
@@ -281,7 +304,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [basic, no_reflec]
+    model_list = [stack]
     show_test = False
     from plotter import generate_graph
     fps = []
