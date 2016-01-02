@@ -80,6 +80,7 @@ def stack(n_hidden, rng):
 
     W_ops = []
     # specify computation of the hidden-to-hidden transform
+    """
     xs = range(depth)
     W_ops += [ 
               lambda accum: ut.times_diag(accum, n_hidden, theta[xs[0]*2,:]), # A
@@ -97,6 +98,19 @@ def stack(n_hidden, rng):
               lambda accum: ut.times_diag(accum, n_hidden, theta[xs[1]*2+1,:]), # D
               lambda accum: ut.do_ifft(accum, n_hidden) # C
     ]
+    """
+    for k in range(depth):
+        W_ops += [ 
+                  lambda accum,k=k: ut.times_diag(accum, n_hidden, theta[k*2,:]), # A
+                  lambda accum: ut.do_fft(accum, n_hidden), # C
+                  lambda accum,k=k: ut.times_diag(accum, n_hidden, theta[k*2+1,:]), # D
+                  lambda accum: ut.do_ifft(accum, n_hidden) # C
+        ]
+        if k == 0:
+            W_ops += [
+                      lambda accum: ut.vec_permutation(accum, n_hidden, index_permute) # perm
+            ]
+
 
     return W_params, W_ops, "stack"
 
