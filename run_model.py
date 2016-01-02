@@ -77,11 +77,10 @@ def stack(n_hidden, rng):
     index_permute = np.random.permutation(n_hidden)
     W_params = [theta]
 
-    i = 0
-    j = 1
 
     W_ops = []
     # specify computation of the hidden-to-hidden transform
+    i = 0
     W_ops += [ 
               lambda accum: ut.times_diag(accum, n_hidden, theta[i*2,:]), # A
               lambda accum: ut.do_fft(accum, n_hidden), # C
@@ -91,6 +90,7 @@ def stack(n_hidden, rng):
     W_ops += [
               lambda accum: ut.vec_permutation(accum, n_hidden, index_permute) # perm
     ]
+    j = 1
     W_ops += [
               lambda accum: ut.times_diag(accum, n_hidden, theta[j*2,:]), # A
               lambda accum: ut.do_fft(accum, n_hidden), # C
