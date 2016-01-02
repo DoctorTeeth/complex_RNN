@@ -106,7 +106,7 @@ def stack(n_hidden, rng):
                   lambda accum,k=k: ut.times_diag(accum, n_hidden, theta[k*2+1,:]), # D
                   lambda accum: ut.do_ifft(accum, n_hidden) # C
         ]
-        if k == 0:
+        if k < depth - 1:
             W_ops += [
                       lambda accum: ut.vec_permutation(accum, n_hidden, index_permute) # perm
             ]
