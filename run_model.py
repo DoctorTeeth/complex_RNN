@@ -74,41 +74,27 @@ def stack(n_hidden, rng):
 
     depth = 2
     theta = ut.initialize_matrix(depth * 2, n_hidden, 'theta', rng)
-    index_permute = np.random.permutation(n_hidden)
+    index_permutes = [] 
+    if depth > 1:
+        for i in range(depth - 1):
+            index_permutes.append(  np.random.permutation(n_hidden)  )
     W_params = [theta]
 
 
-    W_ops = []
     # specify computation of the hidden-to-hidden transform
-    """
-    xs = range(depth)
-    W_ops += [ 
-              lambda accum: ut.times_diag(accum, n_hidden, theta[xs[0]*2,:]), # A
-              lambda accum: ut.do_fft(accum, n_hidden), # C
-              lambda accum: ut.times_diag(accum, n_hidden, theta[xs[0]*2+1,:]), # D
-              lambda accum: ut.do_ifft(accum, n_hidden) # C
-    ]
-    W_ops += [
-              lambda accum: ut.vec_permutation(accum, n_hidden, index_permute) # perm
-    ]
-    #i = 1
-    W_ops += [
-              lambda accum: ut.times_diag(accum, n_hidden, theta[xs[1]*2,:]), # A
-              lambda accum: ut.do_fft(accum, n_hidden), # C
-              lambda accum: ut.times_diag(accum, n_hidden, theta[xs[1]*2+1,:]), # D
-              lambda accum: ut.do_ifft(accum, n_hidden) # C
-    ]
-    """
+    W_ops = []
     for k in range(depth):
         W_ops += [ 
-                  lambda accum,k=k: ut.times_diag(accum, n_hidden, theta[k*2,:]), # A
+                  # k=k necessary because function will get evaluated 
+                  # with final value of k otherwise
+                  lambda accum, k=k: ut.times_diag(accum, n_hidden, theta[k*2,:]), # A
                   lambda accum: ut.do_fft(accum, n_hidden), # C
-                  lambda accum,k=k: ut.times_diag(accum, n_hidden, theta[k*2+1,:]), # D
+                  lambda accum, k=k: ut.times_diag(accum, n_hidden, theta[k*2+1,:]), # D
                   lambda accum: ut.do_ifft(accum, n_hidden) # C
         ]
         if k < depth - 1:
             W_ops += [
-                      lambda accum: ut.vec_permutation(accum, n_hidden, index_permute) # perm
+                      lambda accum, k=k: ut.vec_permutation(accum, n_hidden, index_permutes[k]) # perm
             ]
 
 
