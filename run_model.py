@@ -98,7 +98,7 @@ def stack(n_hidden, rng, depth):
             ]
 
 
-    return W_params, W_ops, "stack"
+    return W_params, W_ops, "stack_" + str(depth) 
 
 def make_stack(depth):
     return lambda n_hidden, rng: stack(n_hidden, rng, depth)
@@ -293,10 +293,10 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(
         description="training a model")
-    parser.add_argument("--n_iter", type=int, default=100)
+    parser.add_argument("--n_iter", type=int, default=20000)
     parser.add_argument("--n_batch", type=int, default=128)
     parser.add_argument("--n_hidden", type=int, default=128)
-    parser.add_argument("--time_steps", type=int, default=10)
+    parser.add_argument("--time_steps", type=int, default=400)
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--savefile", required=True)
     parser.add_argument("--model", default='complex_RNN')
@@ -315,7 +315,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [make_stack(2)]
+    model_list = [make_stack(2), make_stack(4)]
     show_test = False
     from plotter import generate_graph
     fps = []
