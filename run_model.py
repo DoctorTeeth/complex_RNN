@@ -70,9 +70,9 @@ def no_reflec(n_hidden, rng):
     return W_params, W_ops, "no_reflec"
 
 # TODO: make this generic in number of stack elements
-def stack(n_hidden, rng):
+# we want func that takes in depth and returns func that makes stack from h_hidden and rng
+def stack(n_hidden, rng, depth):
 
-    depth = 2
     theta = ut.initialize_matrix(depth * 2, n_hidden, 'theta', rng)
     index_permutes = [] 
     if depth > 1:
@@ -99,6 +99,9 @@ def stack(n_hidden, rng):
 
 
     return W_params, W_ops, "stack"
+
+def make_stack(depth):
+    return lambda n_hidden, rng: stack(n_hidden, rng, depth)
 
 # Warning: assumes n_batch is a divisor of number of data points
 # Suggestion: preprocess outputs to have norm 1 at each time step
@@ -312,7 +315,7 @@ if __name__=="__main__":
               'model': arg_dict['model'],
               'loss_function': arg_dict['loss_function']}
 
-    model_list = [stack]
+    model_list = [make_stack(2)]
     show_test = False
     from plotter import generate_graph
     fps = []
